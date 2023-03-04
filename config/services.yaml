@@ -4,6 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    upload_dir: '%kernel.project_dir%/public/resources/uploads'
+    result_dir: '%kernel.project_dir%/public/resources/results'
+    garminXsdFile: '%kernel.project_dir%/Resources/xsd/TrainingCenterDatabaseV2.xsd'
 
 services:
     # default configuration for services in *this* file
@@ -22,3 +25,8 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Command\H2gCommand:
+        arguments:
+            $uploadDirectory: '%upload_dir%'
+            $resultDirectory: '%result_dir%'
+            $garminXsdFile: '%garminXsdFile%'
