@@ -98,21 +98,49 @@ class H2gCommand extends Command
                 $lap->insertBefore($triggerMethod, $track);
                 $io->info('TriggerMethod Element added to the Lap element before the Track Element');
             }
+            $lastElementInserted = $triggerMethod;
+
+            if ($input->hasOption('cadence') && $input->getOption('cadence')) {
+                $cadence = $input->getOption('cadence');
+                $cadenceElement = $xml->createElement('Cadence', $cadence);
+                $lap->insertBefore($cadenceElement, $triggerMethod);
+                $io->info('Optional Cadence Element added to the Lap element before the TriggerMethod Element');
+                $lastElementInserted = $cadenceElement;
+            }
 
             //add the Intensity element to the Lap element with the value "Active".
             $intensity = $lap->getElementsByTagName('Intensity')->item(0);
             if (!$intensity) {
                 $intensity = $xml->createElement('Intensity', 'Active');
-                $lap->insertBefore($intensity, $triggerMethod);
-                $io->info('Intensity Element added to the Lap element before the TriggerMethod Element');
+                $lap->insertBefore($intensity, $lastElementInserted);
+                $io->info('Intensity Element added to the Lap element before the TriggerMethod or Track Element');
+            }
+            $lastElementInserted = $intensity;
+
+            if ($input->hasOption('max-bpm') && $input->getOption('max-bpm')) {
+                $valueElement = $xml->createElement('Value', $input->getOption('max-bpm'));
+                $maximumBpmElement = $xml->createElement('MaximumHeartRateBpm');
+                $maximumBpmElement->appendChild($valueElement);
+                $lap->insertBefore($maximumBpmElement, $lastElementInserted);
+                $io->info('Optional MaximumHeartRateBpm Element added to the Lap element before the Intensity Element');
+                $lastElementInserted = $maximumBpmElement;
+            }
+
+            if ($input->hasOption('avg-bpm') && $input->getOption('avg-bpm')) {
+                $valueElement = $xml->createElement('Value', $input->getOption('avg-bpm'));
+                $avgBpmElement = $xml->createElement('AverageHeartRateBpm');
+                $avgBpmElement->appendChild($valueElement);
+                $lap->insertBefore($avgBpmElement, $lastElementInserted);
+                $io->info('Optional AverageHeartRateBpm Element added to the Lap element before the Intensity or MaximumHeartRateBpm Element');
+                $lastElementInserted = $avgBpmElement;
             }
 
             //add the calories element to the Lap element with the 0 value.
             $calories = $lap->getElementsByTagName('Calories')->item(0);
             if (!$calories) {
                 $calories = $xml->createElement('Calories', $caloriesPerLap);
-                $lap->insertBefore($calories, $intensity);
-                $io->info("Calories Element added to the Lap element before the Intensity element");
+                $lap->insertBefore($calories, $lastElementInserted);
+                $io->info("Calories Element added to the Lap element before the Intensity or MaximumHeartRateBpm or AverageHeartRateBpm element");
             }
 
             $maximumSpeed = $lap->getElementsByTagName('MaximumSpeed')->item(0);
@@ -123,6 +151,8 @@ class H2gCommand extends Command
             }
 
         }
+
+        //$xml->schemaValidate($this->garminXsdFile);
 
         //$io->info('XML file is valid according to the Garmin XSD schema');
         $outputFileName = Uuid::v4() . '.tcx';
